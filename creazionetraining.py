@@ -10,7 +10,7 @@ from torch import optim
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix
 
-numeroprova = 10
+numeroprova = 3000
 #set seed
 torch.manual_seed(42)
 torch.cuda.manual_seed_all(42)
