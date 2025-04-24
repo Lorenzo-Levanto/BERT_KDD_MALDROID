@@ -10,7 +10,6 @@ from torch import optim
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix
 
-numeroprova = 3000
 #set seed
 torch.manual_seed(42)
 torch.cuda.manual_seed_all(42)
@@ -161,7 +160,7 @@ if __name__ == '__main__':
     print("File trainsentences creato")
 
     #load numeroprova for train
-    df_train = pd.read_csv("trainsentences.csv").head(numeroprova)
+    df_train = pd.read_csv("trainsentences.csv")
  
 
     #label phase
