@@ -16,6 +16,7 @@ torch.cuda.manual_seed_all(42)
 np.random.seed(42)
 random.seed(42)
 
+numeroprova=100
 
 #function
 def convertrowtosentence(row):
@@ -68,6 +69,9 @@ class KDDdataset(Dataset):
 def fine_tuning(model, optimizer, train_dataloader, val_dataloader, criterion, patience, epochs, best_f_score, model_name, device):
     patience_counter = 0
     best_model_epoch = 0  # Tieni traccia dell'epoca con il miglior F1-score
+    
+    train_confusion_data = []
+    
     for epoch in range(epochs):
         # Training phase
         model.train()
@@ -90,11 +94,30 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, criterion, p
             train_predictions.extend(predicted)
             train_labels.extend(labels.cpu().numpy())
 
+        
+        
         train_cm = confusion_matrix(train_labels, train_predictions, labels=[0, 1])
         print(f"\nEpoca {epoch + 1} completata")
         print("Matrice di confusione (Train) [Anormal=0, Normal=1]:")
         print(train_cm)
 
+        tn, fp, fn, tp = train_cm.ravel()
+        precision = 0 if tp + fp == 0 else tp / (tp + fp)
+        recall = 0 if tp + fn == 0 else tp / (tp + fn)
+        f1 = 0 if precision + recall == 0 else 2 * (precision * recall) / (precision + recall)
+        print(f" F1 score val: {f1:.4f}")
+        
+        train_confusion_data.append({
+            "epoch": epoch + 1,
+            "f1_score": f1,
+            #"matrix": train_cm,
+            "true negative(anormal classificate come anormal)": tn,
+            "false positive(anormal classificate come normal)": fp,
+            "false negative(normal classificate come anormal)": fn,
+            "true positive(normal classificate come normal)": tp
+        })
+        
+        
         # Validation phase
         model.eval()
         val_predictions = []
@@ -117,7 +140,7 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, criterion, p
         print("Matrice di confusione (Validation) [Anormal=0, Normal=1]:")
         print(val_cm)
 
-        tn, fp, fn, tp = val_cm.ravel()
+        tn,fp, fn, tp = val_cm.ravel()
         precision = 0 if tp + fp == 0 else tp / (tp + fp)
         recall = 0 if tp + fn == 0 else tp / (tp + fn)
         f1 = 0 if precision + recall == 0 else 2 * (precision * recall) / (precision + recall)
@@ -146,6 +169,12 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, criterion, p
             break
 
     print(f"Miglior modello salvato dall'epoca {best_model_epoch} con F1-score: {best_f_score:.4f}")
+    
+    train_confusion_df = pd.DataFrame(train_confusion_data)
+    train_confusion_df.to_csv("matricetrain.csv", index=False)
+    print(f"matrice di confusione del file train salvata come matricetest.csv")
+    
+    
 
 if __name__ == '__main__':
     
@@ -160,7 +189,7 @@ if __name__ == '__main__':
     print("File trainsentences creato")
 
     #load numeroprova for train
-    df_train = pd.read_csv("trainsentences.csv")
+    df_train = pd.read_csv("trainsentences.csv").head(numeroprova)
  
 
     #label phase
