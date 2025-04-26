@@ -21,24 +21,14 @@ numeroprova = 100
 #function
 def convertrowtosentence(row):
     try:
-        values = [f"{col} is {row[col]}" for col in columnnames()[:-1] if pd.notna(row[col])]
+        #uso le colonne presenti nel DataFrame (escludi l'ultima colonna, che è "label")
+        values = [f"{col} is {row[col]}" for col in row.index[:-1] if pd.notna(row[col])]
         return ", ".join(values)
     except Exception as e:
         print(f"Errore nella conversione della riga {row.name}: {e}")
         return "invalid_sentence"
 
-def columnnames():
-    return [
-        "duration", "protocol_type", "service", "flag", "src_bytes", "dst_bytes", "land", "wrong_fragment",
-        "urgent", "hot", "num_failed_logins", "logged_in", "num_compromised", "root_shell", "su_attempted",
-        "num_root", "num_file_creations", "num_shells", "num_access_files", "num_outbound_cmds",
-        "is_host_login", "is_guest_login", "count", "srv_count", "serror_rate", "srv_serror_rate",
-        "rerror_rate", "srv_rerror_rate", "same_srv_rate", "diff_srv_rate", "srv_diff_host_rate",
-        "dst_host_count", "dst_host_srv_count", "dst_host_same_srv_rate", "dst_host_diff_srv_rate",
-        "dst_host_same_src_port_rate", "dst_host_srv_diff_host_rate", "dst_host_serror_rate",
-        "dst_host_srv_serror_rate", "dst_host_rerror_rate", "dst_host_srv_rerror_rate",
-        "label"
-    ]
+
 
 class KDDdataset(Dataset):
     def __init__(self, df, tokenizer, max_length=128):
@@ -97,12 +87,12 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
         train_cm = confusion_matrix(train_labels, train_predictions, labels=[0, 1])
         print(f"\nEpoca {epoch + 1} completata")
         print("Matrice di confusione (Train) [Anormal=0, Normal=1]:")
-        print(train_cm)
+        
         tn, fp, fn, tp = train_cm.ravel()
         precision = 0 if tp + fp == 0 else tp / (tp + fp)
         recall = 0 if tp + fn == 0 else tp / (tp + fn)
         f1 = 0 if precision + recall == 0 else 2 * (precision * recall) / (precision + recall)
-        print(f"F1 score train: {f1:.4f}")
+        
 
         train_confusion_data.append({
             "epoch": epoch + 1,
@@ -136,7 +126,7 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
         precision_val = 0 if tp_val + fp_val == 0 else tp_val / (tp_val + fp_val)
         recall_val = 0 if tp_val + fn_val == 0 else tp_val / (tp_val + fn_val)
         f1_val = 0 if precision_val + recall_val == 0 else 2 * (precision_val * recall_val) / (precision_val + recall_val)
-        print(f"F1 score val: {f1_val:.4f}")
+        
 
         #Test phase for matrix
         test_predictions = []
@@ -154,13 +144,10 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
                 test_labels.extend(labels.cpu().numpy())
 
         test_cm = confusion_matrix(test_labels, test_predictions, labels=[0, 1])
-        print("Matrice di confusione (Test) [Anormal=0, Normal=1]:")
-        print(test_cm)
         tn_test, fp_test, fn_test, tp_test = test_cm.ravel()
         precision_test = 0 if tp_test + fp_test == 0 else tp_test / (tp_test + fp_test)
         recall_test = 0 if tp_test + fn_test == 0 else tp_test / (tp_test + fn_test)
         f1_test = 0 if precision_test + recall_test == 0 else 2 * (precision_test * recall_test) / (precision_test + recall_test)
-        print(f"F1 score test: {f1_test:.4f}")
 
         test_confusion_data.append({
             "epoch": epoch + 1,
@@ -205,9 +192,10 @@ if __name__ == '__main__':
     testfile = "KDDTest+aggregateOneCls.csv"
 
     #load and create trainsentences
-    df_train = pd.read_csv(trainfile, header=0, names=columnnames())
+    df_train = pd.read_csv(trainfile)
     df_train["text"] = df_train.apply(convertrowtosentence, axis=1)
-    df_train = df_train[["text", "label"]]
+    df_train = df_train[["text", " classification."]]
+    df_train=df_train.rename(columns={" classification.":"label"})
     df_train.to_csv("trainsentences.csv", index=False)
     print("File trainsentences creato")
 
@@ -222,9 +210,10 @@ if __name__ == '__main__':
     traindf, valdf = train_test_split(df_train, test_size=0.15, random_state=42)
 
     #load and create testsentences
-    df_test = pd.read_csv(testfile, header=0, names=columnnames())
+    df_test = pd.read_csv(testfile)
     df_test["text"] = df_test.apply(convertrowtosentence, axis=1)
-    df_test = df_test[["text", "label"]]
+    df_test = df_test[["text", " classification."]]
+    df_test=df_test.rename(columns={" classification.":"label"})
     df_test.to_csv("testsentences.csv", index=False)
     print("File testsentences creato")
 
