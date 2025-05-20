@@ -37,21 +37,19 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
     for epoch in range(epochs):
         # Training phase
         model.train()
-        train_loss = 0.0
         train_predictions = []
         train_labels = []
         for batch in train_dataloader:
             optimizer.zero_grad()
             input_ids = batch["input_ids"].to(device)
             attention_mask = batch["attention_mask"].to(device)
-            labels = batch["labels"].to(device).long()
+            labels = batch["labels"].to(device).float()
             outputs = model(input_ids=input_ids, attention_mask=attention_mask)
             logits = outputs#.logits[:, 1]
             loss = criterion(logits, labels)
             loss.backward()
             optimizer.step()
-            train_loss += loss.item()
-            predicted = torch.argmax(logits, dim=1).cpu().numpy()
+            predicted = (logits > 0.5).float().cpu().numpy()
             train_predictions.extend(predicted)
             train_labels.extend(labels.cpu().numpy())
 
@@ -74,10 +72,10 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
             for batch in val_dataloader:
                 input_ids = batch["input_ids"].to(device)
                 attention_mask = batch["attention_mask"].to(device)
-                labels = batch["labels"].to(device).long()
+                labels = batch["labels"].to(device).float()
                 outputs = model(input_ids=input_ids, attention_mask=attention_mask)
                 logits = outputs#.logits[:, 1] or ['logits'] for bfsq?
-                predicted = torch.argmax(logits, dim=1).cpu().numpy()
+                predicted = (logits > 0.5).float().cpu().numpy()
                 val_predictions.extend(predicted)
                 val_labels.extend(labels.cpu().numpy())
 
@@ -105,10 +103,10 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
             for batch in test_dataloader:
                 input_ids = batch["input_ids"].to(device)
                 attention_mask = batch["attention_mask"].to(device)
-                labels = batch["labels"].to(device).long()
+                labels = batch["labels"].to(device).float()
                 outputs = model(input_ids=input_ids, attention_mask=attention_mask)
                 logits = outputs#.logits[:, 1]
-                predicted = torch.argmax(logits, dim=1).cpu().numpy()
+                predicted = (logits > 0.5).float().cpu().numpy()
                 test_predictions.extend(predicted)
                 test_labels.extend(labels.cpu().numpy())
 
@@ -198,7 +196,7 @@ if __name__ == '__main__':
 
     #load for train
     #df_train = pd.read_csv(train_sentences_file).head(numeroprova)
-    df_train = pd.read_pickle(train_sentences_file).head(numeroprova)
+    df_train = pd.read_pickle(train_sentences_file)#.head(numeroprova)
     
     #label phase for train
     label_encoder = LabelEncoder()
@@ -209,7 +207,7 @@ if __name__ == '__main__':
 
     #load for test
     #df_test = pd.read_csv(test_sentences_file).head(numeroprova)
-    df_test = pd.read_pickle(test_sentences_file).head(numeroprova)
+    df_test = pd.read_pickle(test_sentences_file)#.head(numeroprova)
 
     #label phase for test
     df_test["label"] = label_encoder.transform(df_test["label"])
@@ -257,7 +255,7 @@ if __name__ == '__main__':
 
     #optimizer and criterion 
     optimizer = optim.AdamW(model.parameters(), lr=1e-5)
-    criterion = nn.CrossEntropyLoss()  #crossEntropyLoss per logits e argmax
+    criterion = nn.BCELoss()  #crossEntropyLoss per logits e argmax
 
     #fine tuning phase
     try:    
