@@ -194,7 +194,7 @@ if __name__ == '__main__':
 
     #load for train
     #df_train = pd.read_csv(train_sentences_file).head(numeroprova)
-    df_train = pd.read_pickle(train_sentences_file)#.head(numeroprova)
+    df_train = pd.read_pickle(train_sentences_file).head(numeroprova)
     
     #label phase for train
     label_encoder = LabelEncoder()
@@ -205,7 +205,7 @@ if __name__ == '__main__':
 
     #load for test
     #df_test = pd.read_csv(test_sentences_file).head(numeroprova)
-    df_test = pd.read_pickle(test_sentences_file)#.head(numeroprova)
+    df_test = pd.read_pickle(test_sentences_file).head(numeroprova)
 
     #label phase for test
     df_test["label"] = label_encoder.transform(df_test["label"])
@@ -234,7 +234,7 @@ if __name__ == '__main__':
 
 #model
     
-    bert_model = AutoModel.from_pretrained("prajjwal1/bert-medium", num_labels=2)
+    bert_model = AutoModel.from_pretrained('prajjwal1/bert-medium')
     model = BertBinaryClassificationHeads(
         bert_model=bert_model,
         layer_sizes=[bert_model.config.hidden_size, 128],
