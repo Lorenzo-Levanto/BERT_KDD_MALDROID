@@ -6,15 +6,13 @@ import random
 import torch
 import numpy as np
 from sklearn.model_selection import train_test_split
-from transformers import BertTokenizer, BertForSequenceClassification, BertModel
-from torch.utils.data import DataLoader, Dataset
+from transformers import BertTokenizer, AutoModel
+from torch.utils.data import DataLoader
 import torch.nn as nn
 from torch import optim
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix
-import json
 import os #salvataggio?
-import pickle  #caricare con pickle?
 
 # Set seed
 def set_seed(seed):
@@ -236,7 +234,7 @@ if __name__ == '__main__':
 
 #model
     
-    bert_model = BertModel.from_pretrained("prajjwal1/bert-medium", num_labels=2)
+    bert_model = AutoModel.from_pretrained("prajjwal1/bert-medium", num_labels=2)
     model = BertBinaryClassificationHeads(
         bert_model=bert_model,
         layer_sizes=[bert_model.config.hidden_size, 128],
