@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 import torch.nn as nn
 from torch import optim
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, f1_score
 import os #salvataggio?
 
 # Set seed
@@ -52,15 +52,13 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
             train_predictions.extend(predicted)
             train_labels.extend(labels.cpu().numpy())
 
-        train_cm = confusion_matrix(train_labels, train_predictions, labels=[0, 1])
-        print(f"\nEpoca {epoch + 1} completata")
-        print("Matrice di confusione (Train) [Anormal=0, Normal=1]:")
+        train_cm = confusion_matrix(train_labels, train_predictions, labels=[0, 1, 2, 3, 4])
+        print(f"\nepoca {epoch + 1} completata")
+        print("Matrice di confusione (Train):")
         print(train_cm)
         
-        tn, fp, fn, tp = train_cm.ravel()
-        precision = 0 if tp + fp == 0 else tp / (tp + fp)
-        recall = 0 if tp + fn == 0 else tp / (tp + fn)
-        f1 = 0 if precision + recall == 0 else 2 * (precision * recall) / (precision + recall)
+        f1 = f1_score(train_labels, train_predictions, average="macro")
+
         print(f"F1 score train: {f1:.4f}")
 
         # Validation phase
@@ -78,24 +76,19 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
                 val_predictions.extend(predicted)
                 val_labels.extend(labels.cpu().numpy())
 
-        val_cm = confusion_matrix(val_labels, val_predictions, labels=[0, 1])
-        tn_val, fp_val, fn_val, tp_val = val_cm.ravel()
-        precision_val = 0 if tp_val + fp_val == 0 else tp_val / (tp_val + fp_val)
-        recall_val = 0 if tp_val + fn_val == 0 else tp_val / (tp_val + fn_val)
-        f1_val = 0 if precision_val + recall_val == 0 else 2 * (precision_val * recall_val) / (precision_val + recall_val)
+        val_cm = confusion_matrix(val_labels, val_predictions, labels=[0, 1, 2, 3, 4])
+        f1_val = f1_score(train_labels, train_predictions, average="macro")
+
         print(f"F1 score val: {f1_val:.4f}")
 
         
         train_confusion_data.append({
             "epoch": epoch + 1,
             "f1-score eval": f1_val,
-            "f1-score": f1,
-            "true negative (anormal classificate_come_anormal)": tn,
-            "false positive (anormal classificate_come_normal)": fp,
-            "false negative (normal classificate_come_anormal)": fn,
-            "true positive (normal classificate_come_normal)": tp
+            "f1-score train": f1,
+            "matrix train": train_cm
         })
-
+        
         #Test phase for matrix
         test_predictions = []
         test_labels = []
@@ -110,24 +103,20 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
                 test_predictions.extend(predicted)
                 test_labels.extend(labels.cpu().numpy())
 
-        test_cm = confusion_matrix(test_labels, test_predictions, labels=[0, 1])
-        print("Matrice di confusione (Test) [Anormal=0, Normal=1]:")
+        test_cm = confusion_matrix(test_labels, test_predictions, labels=[0, 1, 2, 3, 4])
+        print("matrice di confusione (Test):")
         print(test_cm)
-        tn_test, fp_test, fn_test, tp_test = test_cm.ravel()
-        precision_test = 0 if tp_test + fp_test == 0 else tp_test / (tp_test + fp_test)
-        recall_test = 0 if tp_test + fn_test == 0 else tp_test / (tp_test + fn_test)
-        f1_test = 0 if precision_test + recall_test == 0 else 2 * (precision_test * recall_test) / (precision_test + recall_test)
-        print(f"F1 score test: {f1_test:.4f}")
+        f1_test = f1_score(test_labels, test_predictions, average="macro")
 
+        print(f"F1 score test: {f1_test:.4f}")
+        
         test_confusion_data.append({
             "f1 validation phase": f1_val,
             "epoch": epoch + 1,
-            "f1-score": f1_test,
-            "true negative (anormal classificate_come_anormal)": tn_test,
-            "false positive (anormal classificate_come_normal)": fp_test,
-            "false negative (normal classificate_come_anormal)": fn_test,
-            "true positive (normal classificate_come_normal)": tp_test
+            "f1-score test": f1_test,
+            "matrix ": test_cm
         })
+        
         '''
         #salvataggio con bertforsequenceclassification!
         if f1_val > best_f_score:
