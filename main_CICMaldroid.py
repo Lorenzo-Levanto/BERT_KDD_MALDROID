@@ -1,4 +1,4 @@
-#anormal =0 anormal =1!!!
+#anormal =0 anormal =1
 from neural_network.sentinelbert import BertBinaryClassificationHeads
 from neural_network.historydataset import KDDdataset
 from preprocessing.load_create_convert import load_processdataPICKLE, load_processdata
@@ -13,7 +13,7 @@ import torch.nn as nn
 from torch import optim
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix
-import os #salvataggio?
+import os
 
 # Set seed
 def set_seed(seed):
@@ -21,10 +21,6 @@ def set_seed(seed):
     torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
     random.seed(seed)
-
-numeroprova = 100
-
-
 
     
 def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloader, criterion, patience, epochs, best_f_score, model_name, device):
@@ -44,7 +40,7 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
             attention_mask = batch["attention_mask"].to(device)
             labels = batch["labels"].to(device).float()
             outputs = model(input_ids=input_ids, attention_mask=attention_mask)
-            logits = outputs#.logits[:, 1]
+            logits = outputs
             loss = criterion(logits, labels)
             loss.backward()
             optimizer.step()
@@ -95,7 +91,7 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
             "true positive (normal classificate_come_normal)": tp
         })
 
-        #Test phase for matrix
+        #Test phase
         test_predictions = []
         test_labels = []
         with torch.no_grad():
@@ -127,25 +123,7 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
             "false negative (normal classificate_come_anormal)": fn_test,
             "true positive (normal classificate_come_normal)": tp_test
         })
-        '''
-        #salvataggio con bertforsequenceclassification!
-        if f1_val > best_f_score:
-            best_f_score = f1_val
-            best_model_epoch = epoch + 1
-            patience_counter = 0
-            try:
-                model.save_pretrained(f"{model_name}_epoch_{epoch + 1}")
-                tokenizer.save_pretrained(f"{model_name}_epoch_{epoch + 1}")
-                print(f"Modello salvato: {model_name}_epoch_{epoch + 1}")
-            except OSError as e:  # More specific exception
-                print(f"Errore durante il salvataggio del modello: {e}")
-        else:
-            patience_counter += 1
 
-        if patience_counter >= patience:
-            print(f"Early stopping at epoch {epoch + 1}")
-            break
-        '''
         #save
         if f1_val > best_f_score:
             best_f_score = f1_val
@@ -194,28 +172,25 @@ if __name__ == '__main__':
 
     
     #load for train
-    #df_train = pd.read_csv(train_sentences_file).head(numeroprova)
-    df_train = pd.read_pickle(train_sentences_file)#.head(numeroprova)
+    #df_train = pd.read_csv(train_sentences_file)
+    df_train = pd.read_pickle(train_sentences_file)
     
     
 
-    #label phase for trainl1
+    #label phase for train
     label_encoder = LabelEncoder()
-    #df_train["label"] = label_encoder.fit_transform(df_train["label"])
-    #df_train["label"] = df_train["label"].apply(lambda x: 0 if x == 0 else 1)
-    # Dove la label NON è 0, impostala a 1.
+    #set 1 if not = 0 for binary
     df_train.loc[df_train['label'] != 0, 'label'] = 1
 
     #divide train
     traindf, valdf = train_test_split(df_train, test_size=0.20, stratify=df_train["label"], random_state=42)
 
     #load for test
-    #df_test = pd.read_csv(test_sentences_file).head(numeroprova)
-    df_test = pd.read_pickle(test_sentences_file)#.head(numeroprova)
+    #df_test = pd.read_csv(test_sentences_file)
+    df_test = pd.read_pickle(test_sentences_file)
 
 
     #label phase for test
-    #df_test["label"] = label_encoder.transform(df_test["label"])
     df_test["label"] = df_test["label"].apply(lambda x: 0 if x == 0 else 1)
     #token phase
     tokenizer = BertTokenizer.from_pretrained("prajjwal1/bert-medium")
@@ -225,45 +200,25 @@ if __name__ == '__main__':
     val_dataset = KDDdataset(valdf, tokenizer)
     test_dataset = KDDdataset(df_test, tokenizer)
     
-    '''
-    #save , puo servire per colab???
-    torch.save(train_dataset, "train_dataset.pt")
-    torch.save(val_dataset, "val_dataset.pt")
-    torch.save(test_dataset, "test_dataset.pt")
-    tokenizer.save_pretrained("saved_tokenizer")
-    print("dataset tokenizzati salvati")
-    '''
-
     #dataloader from torch
     train_dataloader = DataLoader(train_dataset, batch_size=16, shuffle=True)
     val_dataloader = DataLoader(val_dataset, batch_size=16, shuffle=False)
     test_dataloader = DataLoader(test_dataset, batch_size=16, shuffle=False)
 
-#model
-    
+    #model
     bert_model = AutoModel.from_pretrained('prajjwal1/bert-medium')
     model = BertBinaryClassificationHeads(
         bert_model=bert_model,
         layer_sizes=[bert_model.config.hidden_size, 128],
         dropout_probs=[0.2]
     )
-    
-    #if want to use bertforsequenceclassification
-    #model = BertForSequenceClassification.from_pretrained("prajjwal1/bert-medium", num_labels=2)
-    
-
-
-
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.to(device)
 
-
-    #criterion = nn.BCELoss()
-
     #optimizer and criterion 
     optimizer = optim.AdamW(model.parameters(), lr=1e-5)
-    criterion = nn.BCELoss()  #crossEntropyLoss per logits e argmax
+    criterion = nn.BCELoss()
 
     #fine tuning phase
     try:    
@@ -290,14 +245,6 @@ if __name__ == '__main__':
             print("Modello salvato come savemodel")
         except Exception as e:
             print(f"Errore durante il salvataggio finale del modello: {e}")    
-    '''
-    #save if use bertfor....
-    finally:
-        try:
-            model.save_pretrained("savemodel")
-            tokenizer.save_pretrained("savemodel")
-            print("Modello salvato come savemodel")
-        except Exception as e:
-            print(f"Errore durante il salvataggio finale del modello: {e}")
-    '''
+
+
 
