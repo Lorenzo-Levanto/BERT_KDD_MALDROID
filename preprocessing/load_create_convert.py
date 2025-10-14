@@ -18,7 +18,7 @@ def load_processdata(trainfile, testfile, columnmapping_file):
         
         
         #load and create trainsentences
-        df_train = pd.read_csv(trainfile, encoding="latin1")  # latin1 per simboli speciali
+        df_train = pd.read_csv(trainfile, encoding="latin1")
         df_train.columns = df_train.columns.str.replace('Ã¬', 'i', regex=False).str.strip()
         df_train.rename(columns=columnmapping, inplace=True)
         df_train["text"] = df_train.apply(convertrowtosentence, axis=1)
@@ -44,7 +44,7 @@ def load_processdataPICKLE(trainfile, testfile, columnmapping_file):
         
         
         #load and create trainsentences
-        df_train = pd.read_csv(trainfile, encoding="latin1")  # latin1 per simboli speciali
+        df_train = pd.read_csv(trainfile, encoding="latin1")
         df_train.columns = df_train.columns.str.replace('Ã¬', 'i', regex=False).str.strip()
         df_train.rename(columns=columnmapping, inplace=True)
         df_train["text"] = df_train.apply(convertrowtosentence, axis=1)
@@ -61,4 +61,5 @@ def load_processdataPICKLE(trainfile, testfile, columnmapping_file):
         df_test.to_pickle("testsentences.pkl")
         print("File testsentences creato")
         
+
         return "trainsentences.pkl", "testsentences.pkl"
