@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch
-# Custom Model ispirato a sentinelbert gandalf
+# Custom Model 
 class BertBinaryClassificationHeads(nn.Module):
     def __init__(self, bert_model, layer_sizes, dropout_probs):
         super(BertBinaryClassificationHeads, self).__init__()
@@ -13,7 +13,7 @@ class BertBinaryClassificationHeads(nn.Module):
             self.layers.append(nn.ReLU())
             self.layers.append(nn.Dropout(dropout_probs[i]))
 
-        self.output_layer = nn.Linear(layer_sizes[-1], 1)  # Output singolo per classificazione binaria
+        self.output_layer = nn.Linear(layer_sizes[-1], 1) 
 
     def forward(self, input_ids, attention_mask):
         outputs = self.bert_model(input_ids=input_ids, attention_mask=attention_mask)
@@ -22,4 +22,5 @@ class BertBinaryClassificationHeads(nn.Module):
             x = layer(x)
         output_layer = self.output_layer(x)
         output_layer = torch.sigmoid(output_layer)
+
         return output_layer.squeeze(1)
