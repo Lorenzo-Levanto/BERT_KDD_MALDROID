@@ -12,12 +12,12 @@ if __name__ == '__main__':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Device:", device)
 
-    # === PARAMETRI ===
-    test_sentences_file = "testsentences.pkl"  # il .pkl già creato dal main
-    model_dir = "savemodel"  # cartella dove hai salvato modello e tokenizer
+    
+    test_sentences_file = "testsentences.pkl"  
+    model_dir = "savemodel"  
     max_len = 128
 
-    # === 1. CARICA E PREPARA IL DATASET DI TEST ===
+    #dataset
     df_test = pd.read_pickle(test_sentences_file)
 
 
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     test_dataset = KDDdataset(df_test, tokenizer)
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
 
-    # === 2. CARICA IL MODELLO SALVATO ===
+    #model
     bert_model = AutoModel.from_pretrained("prajjwal1/bert-medium")
     num_classes = len(label_encoder.classes_)
     model = BertMultiClassificationHeads(
@@ -43,7 +43,6 @@ if __name__ == '__main__':
 
     print("Modello e dataset caricati correttamente.")
 
-    # === 3. INTERPRETAZIONE CON CAPTUM ===
     list_tokens = []
     list_scores = []
 
@@ -75,7 +74,7 @@ if __name__ == '__main__':
         list_tokens.append(tokens)
         list_scores.append(attributions)
 
-    # === 4. SALVA I RISULTATI ===
+    #save
     with open('xai_list_score.pickle', 'wb') as handle:
         pickle.dump(list_scores, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
