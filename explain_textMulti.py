@@ -50,7 +50,7 @@ if __name__ == '__main__':
         input_ids = batch["input_ids"].to(device)
         attention_mask = batch["attention_mask"].to(device)
 
-        outputs = model(input_ids=input_ids, attention_mask=attention_mask)  # [1, num_classes]
+        outputs = model(input_ids=input_ids, attention_mask=attention_mask)  
         pred_class = torch.argmax(outputs, dim=1).item()
 
         token_reference = TokenReferenceBase(reference_token_idx=tokenizer.pad_token_id)
@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
         attributions = attributions_ig.sum(dim=2).squeeze(0)
         attributions = attributions / torch.norm(attributions)
-        attributions = attributions.detach().cpu().numpy()
+        attributions = attributions.cpu().detach().numpy()
 
         tokens = tokenizer.convert_ids_to_tokens(input_ids.squeeze().cpu().numpy())
 
@@ -81,3 +81,4 @@ if __name__ == '__main__':
     with open('xai_list_tokens.pickle', 'wb') as handle:
         pickle.dump(list_tokens, handle, protocol=pickle.HIGHEST_PROTOCOL)
     print('END EXPLAIN')
+
