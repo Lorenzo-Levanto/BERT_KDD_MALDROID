@@ -10,7 +10,7 @@ from sklearn.preprocessing import LabelEncoder
 
 if __name__ == '__main__':
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print("Device:", device)
+    print('device-->', device)
 
     
     test_sentences_file = "testsentences.pkl"  
@@ -41,14 +41,14 @@ if __name__ == '__main__':
     model.to(device)
     model.eval()
 
-    print("Modello e dataset caricati correttamente.")
+    print("Modello e dataset caricati")
 
     list_tokens = []
     list_scores = []
 
-    for batch in test_loader:
-        input_ids = batch["input_ids"].to(device)
-        attention_mask = batch["attention_mask"].to(device)
+    for ele in test_loader:
+        input_ids = ele["input_ids"].to(device)
+        attention_mask = ele["attention_mask"].to(device)
 
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)  
         pred_class = torch.argmax(outputs, dim=1).item()
@@ -69,7 +69,7 @@ if __name__ == '__main__':
         attributions = attributions / torch.norm(attributions)
         attributions = attributions.cpu().detach().numpy()
 
-        tokens = tokenizer.convert_ids_to_tokens(input_ids.squeeze().cpu().numpy())
+        tokens = [tokenizer.convert_ids_to_tokens(t) for t in tokens[0]]
 
         list_tokens.append(tokens)
         list_scores.append(attributions)
@@ -81,4 +81,5 @@ if __name__ == '__main__':
     with open('xai_list_tokens.pickle', 'wb') as handle:
         pickle.dump(list_tokens, handle, protocol=pickle.HIGHEST_PROTOCOL)
     print('END EXPLAIN')
+
 
