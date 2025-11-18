@@ -31,7 +31,7 @@ df_local = pd.DataFrame(filtered_examples)
 
 #global 
 df_global = df_local.mean().sort_values(ascending=False).reset_index()
-df_global.columns = ["feature", "global_mean_abs_score"]
+df_global.columns = ["feature", "global_score"]
 
 
 #save
