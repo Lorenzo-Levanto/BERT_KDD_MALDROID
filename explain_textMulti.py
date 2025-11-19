@@ -68,6 +68,7 @@ if __name__ == '__main__':
         attributions = attributions_ig.sum(dim=2).squeeze(0)
         attributions = attributions / torch.norm(attributions)
         attributions = attributions.cpu().detach().numpy()
+        tokens = input_ids.cpu().numpy().tolist()
 
         tokens = [tokenizer.convert_ids_to_tokens(t) for t in tokens[0]]
 
@@ -81,5 +82,4 @@ if __name__ == '__main__':
     with open('xai_list_tokens.pickle', 'wb') as handle:
         pickle.dump(list_tokens, handle, protocol=pickle.HIGHEST_PROTOCOL)
     print('END EXPLAIN')
-
 
