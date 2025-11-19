@@ -17,10 +17,7 @@ for sentence, scores in zip(df_test["text"], list_scores):
     # split with ","
     features = [feat.strip() for feat in sentence.split(",")]
 
-    #feature different from scores so from start to L
     L = min(len(features), len(scores))
-    features = features[:L]
-    scores = scores[:L]
 
     feature_dict = {features[i]: float(scores[i]) for i in range(L)}
 
