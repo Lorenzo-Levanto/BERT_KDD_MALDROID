@@ -15,11 +15,24 @@ filtered_examples = []
 for sentence, scores in zip(df_test["text"], list_scores):
 
     # split with ","
-    features = [feat.strip() for feat in sentence.split(",")]
+    startfeature = [feat.strip() for feat in sentence.split(",")]
 
-    L = min(len(features), len(scores))
+    L = min(len(startfeature), len(scores))
+    
+    feature_dict = {}
 
-    feature_dict = {features[i]: float(scores[i]) for i in range(L)}
+    #getting everything before the "is"
+    for i in range(L):
+        passingfeature = startfeature[i]  
+        score = float(scores[i])  
+
+        if " is " in passingfeature:
+            feature_name = passingfeature.split(" is ")[0].strip()#0 for the left part?
+        else:
+            feature_name = passingfeature
+
+        #update dictionary with feature correctly
+        feature_dict[feature_name] = score
 
     filtered_examples.append(feature_dict)
 
@@ -28,7 +41,7 @@ df_local = pd.DataFrame(filtered_examples)
 
 #global 
 df_global = df_local.mean().sort_values(ascending=False).reset_index()
-df_global.columns = ["feature", "global_score"]
+df_global.columns = ["feature", "global_mean_abs_score"]
 
 
 #save
