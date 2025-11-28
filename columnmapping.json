@@ -24,7 +24,7 @@
     "logged_in": "logged in",
     "dst_host_serror_rate": "destination host syn error rate",
     "num_compromised": "number of compromised conditions",
-    " dst_host_srv_serror_rate": "destination host service syn error rate",
+    "dst_host_srv_serror_rate": "destination host service syn error rate",
     "root_shell": "root shell obtained",
     "dst_host_rerror_rate": "destination host rej error rate",
     "su_attempted": "root command attempted",
@@ -40,5 +40,5 @@
     "count": "number of connection to the same host",
     "srv_count": "same service connection count",
     "serror_rate": "syn error rate",
-    " srv_rerror_rate": "service rej error rate"
+    "srv_rerror_rate": "service rej error rate"
   }
