@@ -224,8 +224,8 @@ if __name__ == '__main__':
             val_dataloader,
             test_dataloader,
             criterion,
-            patience=10,
-            epochs=10,
+            patience=3,
+            epochs=15,
             best_f_score=-float("inf"),
             model_name="savemodel",
             device=device
