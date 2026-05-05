@@ -204,7 +204,7 @@ if __name__ == '__main__':
     bert_model = AutoModel.from_pretrained('prajjwal1/bert-medium')
     model = BertBinaryClassificationHeads(
         bert_model=bert_model,
-        layer_sizes=[bert_model.config.hidden_size, 128],
+        layer_sizes=[bert_model.config.hidden_size, 512],
         dropout_probs=[0.2]
     )
     
