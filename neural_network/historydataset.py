@@ -2,7 +2,7 @@ from torch.utils.data import Dataset
 import torch
 
 class KDDdataset(Dataset):
-    def __init__(self, df, tokenizer, max_length=128):
+    def __init__(self, df, tokenizer, max_length=512):
         self.texts = df["text"].tolist()
         self.labels = df["label"].tolist()
         self.tokenizer = tokenizer
