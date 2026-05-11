@@ -15,7 +15,7 @@ if __name__ == '__main__':
     
     test_sentences_file = "testsentences.pkl"  
     model_dir = "savemodel"  
-    max_len = 128
+    max_len = 512
 
     #dataset
     df_test = pd.read_pickle(test_sentences_file)
