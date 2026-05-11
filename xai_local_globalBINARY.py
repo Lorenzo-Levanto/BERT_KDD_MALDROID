@@ -90,10 +90,15 @@ for tokens, scores in zip(list_tokens, list_scores):
 #local
 df_local = pd.DataFrame(filtered_examples)
 
-df_local['label_classe'] = list_labels
+df_local['label_classe'] = list_labels 
+
+#for having important feature always positive
+feature_cols = df_local.columns.drop('label_classe')
+df_local.loc[df_local['label_classe'] == 0, feature_cols] *= -1
 
 df_local_0 = df_local[df_local['label_classe'] == 0].drop(columns=['label_classe'])
 df_local_1 = df_local[df_local['label_classe'] == 1].drop(columns=['label_classe'])
+
 
 
 df_global_0 = df_local_0.mean().sort_values(ascending=False).reset_index()
