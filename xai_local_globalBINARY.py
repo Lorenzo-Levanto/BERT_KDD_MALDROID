@@ -7,7 +7,9 @@ with open("xai_list_tokens.pickle", "rb") as f:
 with open("xai_list_score.pickle", "rb") as f:
     list_scores = pickle.load(f)
 
-
+with open("xai_list_labels.pickle", "rb") as f:
+    list_labels = pickle.load(f)
+    
 filtered_examples = []
 
 
