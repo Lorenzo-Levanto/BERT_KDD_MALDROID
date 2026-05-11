@@ -88,11 +88,25 @@ for tokens, scores in zip(list_tokens, list_scores):
 #local
 df_local = pd.DataFrame(filtered_examples)
 
-#global
-df_global = df_local.mean().sort_values(ascending=False).reset_index()
-df_global.columns = ["feature", "global_mean_score"]
+df_local['label_classe'] = list_labels
 
-#save
-df_local.to_csv("local_feature_scores.csv", index=False)
-df_global.to_csv("global_feature_scores.csv", index=False)
+df_local_0 = df_local[df_local['label_classe'] == 0].drop(columns=['label_classe'])
+df_local_1 = df_local[df_local['label_classe'] == 1].drop(columns=['label_classe'])
+
+
+df_global_0 = df_local_0.mean().sort_values(ascending=False).reset_index()
+df_global_0.columns = ["feature", "global_mean_score"]
+
+df_global_1 = df_local_1.mean().sort_values(ascending=False).reset_index()
+df_global_1.columns = ["feature", "global_mean_score"]
+
+
+
+df_local.drop(columns=['label_classe']).to_csv("local_feature_scores.csv", index=False)
+
+df_global_0.to_csv("global_feature_scores_class0.csv", index=False)
+df_global_1.to_csv("global_feature_scores_class1.csv", index=False)
+
+print("Done")
+
 
