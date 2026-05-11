@@ -50,32 +50,35 @@ if __name__ == '__main__':
     #vis_data_records = []
     list_tokens = []
     list_scores = []
+    list_labels = []
 
     print('START EXPLAIN')
     for ele in test_loader:
         input_ids = ele['input_ids'].to(device)
         attention_mask = ele['attention_mask'].to(device)
         output = model(input_ids, attention_mask)
+        label = ele['labels'].item()
 
         pred = output.item()
         pred_ind  = (output > 0.5).float().item()
-        #print(pred)
+        if pred_ind == label:
+            token_reference = TokenReferenceBase(reference_token_idx=tokenizer.pad_token_id)
+            reference_indices = token_reference.generate_reference(512, device=device).unsqueeze(0)
 
-        token_reference = TokenReferenceBase(reference_token_idx=tokenizer.pad_token_id)
-        reference_indices = token_reference.generate_reference(512, device=device).unsqueeze(0)
-
-        lig = LayerIntegratedGradients(model, model.bert_model.embeddings)
-        attributions_ig, delta = lig.attribute(input_ids, reference_indices, additional_forward_args=attention_mask, \
+            lig = LayerIntegratedGradients(model, model.bert_model.embeddings)
+            attributions_ig, delta = lig.attribute(input_ids, reference_indices, additional_forward_args=attention_mask, \
                                                     return_convergence_delta=True)
 
-        attributions = attributions_ig.sum(dim=2).squeeze(0)
-        attributions = attributions / torch.norm(attributions)
-        attributions = attributions.cpu().detach().numpy()
-        tokens = input_ids.cpu().numpy().tolist()
+            attributions = attributions_ig.sum(dim=2).squeeze(0)
+            attributions = attributions / torch.norm(attributions)
+            attributions = attributions.cpu().detach().numpy()
+            tokens = input_ids.cpu().numpy().tolist()
 
-        tokens = [tokenizer.convert_ids_to_tokens(t) for t in tokens[0]]
-        list_tokens.append(tokens)
-        list_scores.append(attributions)
+            tokens = [tokenizer.convert_ids_to_tokens(t) for t in tokens[0]]
+            list_tokens.append(tokens)
+            list_scores.append(attributions)
+            list_labels.append(label)
+
 
 
     with open('xai_list_score.pickle', 'wb') as handle:
@@ -83,4 +86,7 @@ if __name__ == '__main__':
 
     with open('xai_list_tokens.pickle', 'wb') as handle:
         pickle.dump(list_tokens, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    with open('xai_list_labels.pickle', 'wb') as handle:
+        pickle.dump(list_labels, handle, protocol=pickle.HIGHEST_PROTOCOL)
     print('END EXPLAIN')
