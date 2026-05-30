@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     
     test_sentences_file = "testsentences.pkl"  
-    model_dir = "savemodel"  
+    model_dir = "savemodelepochX"  
     max_len = 512
 
     #dataset
