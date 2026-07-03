@@ -163,7 +163,7 @@ if __name__ == '__main__':
 
     trainfile = "KDDTrain+aggregateOneCls.csv"
     testfile = "KDDTest+aggregateOneCls.csv"
-    columnmapping_file = "columnmapping.json"
+    columnmapping_file = "columnmapping_KDD.json"
     
     #train_sentences_file, test_sentences_file = load_processdata(trainfile, testfile, columnmapping_file)
     train_sentences_file, test_sentences_file = load_processdataPICKLE(trainfile, testfile, columnmapping_file)
