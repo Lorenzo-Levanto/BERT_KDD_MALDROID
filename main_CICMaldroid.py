@@ -1,4 +1,3 @@
-#anormal =0 anormal =1
 from neural_network.sentinelbert import BertBinaryClassificationHeads
 from neural_network.historydataset import KDDdataset
 from preprocessing.load_create_convert import load_processdataPICKLE, load_processdata
@@ -50,7 +49,7 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
 
         train_cm = confusion_matrix(train_labels, train_predictions, labels=[0, 1])
         print(f"\nEpoca {epoch + 1} completata")
-        print("Matrice di confusione (Train) [Anormal=0, Normal=1]:")
+        print("Matrice di confusione (Train) [Normal=0, Malware=1]:")
         print(train_cm)
         
         tn, fp, fn, tp = train_cm.ravel()
@@ -85,10 +84,10 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
             "epoch": epoch + 1,
             "f1-score eval": f1_val,
             "f1-score": f1,
-            "true negative (anormal classificate_come_anormal)": tn,
-            "false positive (anormal classificate_come_normal)": fp,
-            "false negative (normal classificate_come_anormal)": fn,
-            "true positive (normal classificate_come_normal)": tp
+            "true negative (normal classificate_come_normal)": tn,
+            "false positive (normal classificate_come_malware)": fp,
+            "false negative (malware classificate_come_normal)": fn,
+            "true positive (malware classificate_come_malware)": tp
         })
 
         #Test phase
@@ -100,13 +99,13 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
                 attention_mask = batch["attention_mask"].to(device)
                 labels = batch["labels"].to(device).float()
                 outputs = model(input_ids=input_ids, attention_mask=attention_mask)
-                logits = outputs#.logits[:, 1]
+                logits = outputs
                 predicted = (logits > 0.5).float().cpu().numpy()
                 test_predictions.extend(predicted)
                 test_labels.extend(labels.cpu().numpy())
 
         test_cm = confusion_matrix(test_labels, test_predictions, labels=[0, 1])
-        print("Matrice di confusione (Test) [Anormal=0, Normal=1]:")
+        print("Matrice di confusione (Train) [Normal=0, Malware=1]:")
         print(test_cm)
         tn_test, fp_test, fn_test, tp_test = test_cm.ravel()
         precision_test = 0 if tp_test + fp_test == 0 else tp_test / (tp_test + fp_test)
@@ -118,10 +117,10 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
             "f1 validation phase": f1_val,
             "epoch": epoch + 1,
             "f1-score": f1_test,
-            "true negative (anormal classificate_come_anormal)": tn_test,
-            "false positive (anormal classificate_come_normal)": fp_test,
-            "false negative (normal classificate_come_anormal)": fn_test,
-            "true positive (normal classificate_come_normal)": tp_test
+            "true negative (normal classificate_come_normal)": tn_test,
+            "false positive (normal classificate_come_malware)": fp_test,
+            "false negative (malware classificate_come_normal)": fn_test,
+            "true positive (malware classificate_come_malware)": tp_test
         })
 
         #save
