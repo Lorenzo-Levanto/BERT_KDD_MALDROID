@@ -48,7 +48,7 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
 
         train_cm = confusion_matrix(train_labels, train_predictions, labels=[0, 1])
         print(f"\nEpoca {epoch + 1} completata")
-        print("Matrice di confusione (Train) [Anormal=0, Normal=1]:")
+        print("Matrice di confusione (Train) [Normal=0, Anormal=1]:")
         print(train_cm)
         
         tn, fp, fn, tp = train_cm.ravel()
@@ -83,10 +83,10 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
             "epoch": epoch + 1,
             "f1-score eval": f1_val,
             "f1-score": f1,
-            "true negative (anormal classificate_come_anormal)": tn,
-            "false positive (anormal classificate_come_normal)": fp,
-            "false negative (normal classificate_come_anormal)": fn,
-            "true positive (normal classificate_come_normal)": tp
+            "true negative (normal classificate_come_normal)": tn,
+            "false positive (normal classificate_come_anormal)": fp,
+            "false negative (anormal classificate_come_normal)": fn,
+            "true positive (anormal classificate_come_anormal)": tp
         })
 
         #Test phase
@@ -104,7 +104,7 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
                 test_labels.extend(labels.cpu().numpy())
 
         test_cm = confusion_matrix(test_labels, test_predictions, labels=[0, 1])
-        print("Matrice di confusione (Test) [Anormal=0, Normal=1]:")
+        print("Matrice di confusione (Test) [Normal=0, Anormal=1]:")
         print(test_cm)
         tn_test, fp_test, fn_test, tp_test = test_cm.ravel()
         precision_test = 0 if tp_test + fp_test == 0 else tp_test / (tp_test + fp_test)
@@ -116,10 +116,10 @@ def fine_tuning(model, optimizer, train_dataloader, val_dataloader, test_dataloa
             "f1 validation phase": f1_val,
             "epoch": epoch + 1,
             "f1-score": f1_test,
-            "true negative (anormal classificate_come_anormal)": tn_test,
-            "false positive (anormal classificate_come_normal)": fp_test,
-            "false negative (normal classificate_come_anormal)": fn_test,
-            "true positive (normal classificate_come_normal)": tp_test
+            "true negative (normal classificate_come_normal)": tn_test,
+            "false positive (normal classificate_come_anormal)": fp_test,
+            "false negative (anormal classificate_come_normal)": fn_test,
+            "true positive (anormal classificate_come_anormal)": tp_test
         })
 
         #save
@@ -174,8 +174,9 @@ if __name__ == '__main__':
     df_train = pd.read_pickle(train_sentences_file)
     
     #label phase train
-    label_encoder = LabelEncoder()
-    df_train["label"] = label_encoder.fit_transform(df_train["label"])
+    label_mapping = {"normal": 0, "Anormal": 1}
+    df_train["label"] = df_train["label"].map(label_mapping)
+    print("Mappatura delle classi:", label_mapping)
 
     #divide train
     traindf, valdf = train_test_split(df_train, test_size=0.20, stratify=df_train["label"], random_state=42)
@@ -185,7 +186,7 @@ if __name__ == '__main__':
     df_test = pd.read_pickle(test_sentences_file)
 
     #label phase test
-    df_test["label"] = label_encoder.transform(df_test["label"])
+    df_test["label"] = df_test["label"].map(label_mapping)
 
     #token phase
     tokenizer = BertTokenizer.from_pretrained("prajjwal1/bert-medium")
