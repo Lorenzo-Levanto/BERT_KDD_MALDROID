@@ -167,6 +167,8 @@ python main_CICMaldroid.py
 # CIC-MalDroid — multiclass malware family classification
 python main_CICMaldroidMulticlass.py
 
+Note Explainability: Before running the XAI scripts, identify the best epoch from training or the confusion matrix and ensure the corresponding checkpoint is placed in `model_dir/` (e.g., `savemodel_epoch_<X>` or by updating the best epoch number `X` in the scripts).
+
 # Explainability (Integrated Gradients)
 python calculate_integrated_gradients_binary.py
 python calculate_integrated_gradients_multiclass.py
